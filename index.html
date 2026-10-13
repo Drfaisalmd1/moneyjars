@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Couples Money Jar Calculator</title>
+<title>Money Jar Calculator</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -65,18 +65,21 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .brand{display:flex;align-items:center;gap:16px;background:#f4f7f2;border-radius:14px;padding:14px 20px;margin-bottom:22px}
 .bn{font:700 clamp(1.3rem,4vw,1.9rem)/1.1 'Bricolage Grotesque',Georgia,sans-serif;letter-spacing:-.02em;color:#14452f}
 .bt{font-weight:500;font-size:.95rem;color:#3f5f4f;margin-top:2px}
+body.single .c2,body.single #perCard{display:none}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 <main>
   <div class="brand"><svg aria-hidden="true" viewBox="0 0 120 124" width="64" height="66"><path d="M18 100 C40 86 80 86 102 100" fill="none" stroke="#14452f" stroke-width="5" stroke-linecap="round"/><path d="M60 92 L60 46" fill="none" stroke="#14452f" stroke-width="6" stroke-linecap="round"/><path d="M60 70 C42 70 30 58 28 42 C46 42 58 52 60 70Z" fill="#5fae4a"/><path d="M60 54 C58 30 76 14 98 12 C100 36 84 54 60 54Z" fill="#14452f"/><ellipse cx="60" cy="112" rx="6" ry="8" fill="#e0a82e"/></svg><div><div class="bn">Build More Than Yourself</div><div class="bt">Planting seeds for investment</div></div></div>
-  <h1>Money jar calculator for couples</h1>
-  <p class="lede">Enter what each of you earns. A slice goes to your personal jars, and the rest goes to your joint jars. Rename any jar or change any percentage to suit you.</p>
+  <h1>Money jar calculator</h1>
+  <p class="lede">Enter your income and see how much belongs in each jar. Couples can add a second income: a slice goes to personal jars and the rest to joint jars. Rename any jar or change any percentage to suit you.</p>
 
   <div class="top">
     <label for="cur">Currency</label>
     <select id="cur"><option value="£">£ GBP</option><option value="$">$ USD</option><option value="€">€ EUR</option><option value="A$">A$ AUD</option><option value="C$">C$ CAD</option><option value="NZ$">NZ$ NZD</option></select>
+    <label for="mode">Plan for</label>
+    <select id="mode"><option value="couple">A couple</option><option value="single">One person</option></select>
     <button class="b" id="reset" type="button">Reset everything</button>
   </div>
 
@@ -85,16 +88,16 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
     <p class="sub">Type your names, then enter each income source for each of you. Leave a box empty if it doesn't apply.</p>
     <div class="scroll">
     <table>
-      <thead><tr><th>Income source</th><th><input class="nin" id="n1" aria-label="First name" maxlength="30"></th><th><input class="nin" id="n2" aria-label="Second name" maxlength="30"></th><th></th></tr></thead>
+      <thead><tr><th>Income source</th><th><input class="nin" id="n1" aria-label="First name" maxlength="30"></th><th class="c2"><input class="nin" id="n2" aria-label="Second name" maxlength="30"></th><th></th></tr></thead>
       <tbody id="incRows"></tbody>
-      <tfoot><tr><td><b>Sub total</b></td><td class="r" id="s1"></td><td class="r" id="s2"></td><td></td></tr></tfoot>
+      <tfoot><tr><td><b>Sub total</b></td><td class="r" id="s1"></td><td class="r c2" id="s2"></td><td></td></tr></tfoot>
     </table>
     </div>
     <div class="foot"><button class="b" id="addInc" type="button">Add income source</button>
-      <div class="pooled"><span>Total combined (pooled)</span> <span class="big" id="pooled"></span></div></div>
+      <div class="pooled"><span id="pl">Total combined (pooled)</span> <span class="big" id="pooled"></span></div></div>
   </section>
 
-  <section class="card" aria-label="Personal jars">
+  <section class="card" id="perCard" aria-label="Personal jars">
     <h2>Personal jars</h2>
     <p class="sub">A share of your combined income, split 50/50 between you, goes into personal jars.</p>
     <div class="money">
@@ -111,9 +114,9 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   </section>
 
   <section class="card" aria-label="Joint jars">
-    <h2>Joint jars</h2>
-    <p class="sub">Everything left after the personal pot goes into your shared account, split across these jars.</p>
-    <div class="money"><span>Joint total</span><span class="big" id="jointAmt"></span></div>
+    <h2 id="jh">Joint jars</h2>
+    <p class="sub" id="jsub">Everything left after the personal pot goes into your shared account, split across these jars.</p>
+    <div class="money"><span id="jl">Joint total</span><span class="big" id="jointAmt"></span></div>
     <div class="grid" id="jointGrid"></div>
     <div class="foot"><span id="jointSt"></span><div class="btns"><button class="b" id="jointScale" type="button">Scale to 100%</button><button class="b" id="jointReset" type="button">Reset to defaults</button></div></div>
   </section>
@@ -127,7 +130,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   var DPP=16.67,DP=[25,25,25,25],DJ=[10,10,5,10,10,55];
   var PCT='<label class="pct"><input type="number" inputmode="decimal" min="0" max="100" step="any" aria-label="Percentage"><span>%</span></label>';
   function fresh(){
-    S={names:['Partner 1','Partner 2'],pp:16.67,
+    S={mode:(S&&S.mode)||'couple',names:['Partner 1','Partner 2'],pp:16.67,
       inc:[{l:'Salary',a:0,b:0},{l:'Rent / other earnings',a:0,b:0}],
       per:[{n:'Play',p:25,c:'#d65a8a'},{n:'Financial freedom',p:25,c:'#3b6fd4'},{n:'Education',p:25,c:'#d49a1f'},{n:'Long-term savings for spending',p:25,c:'#8a5cd1'}],
       joint:[{n:'Play – self reward',p:10,c:'#d65a8a'},{n:'Financial freedom account',p:10,c:'#3b6fd4'},{n:'Give – charity',p:5,c:'#2f9e5f'},{n:'Education',p:10,c:'#d49a1f'},{n:'Long-term savings for spending',p:10,c:'#8a5cd1'},{n:'Necessities and bills',p:55,c:'#0f6b63'}]};
@@ -140,7 +143,7 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
     var b=$('incRows');b.innerHTML='';
     S.inc.forEach(function(r,i){
       var tr=document.createElement('tr');
-      tr.innerHTML='<td><input class="tx" aria-label="Income source" maxlength="40"></td><td><input class="amt-in" type="number" inputmode="decimal" min="0" step="any" placeholder="0.00" aria-label="First amount"></td><td><input class="amt-in" type="number" inputmode="decimal" min="0" step="any" placeholder="0.00" aria-label="Second amount"></td><td><button class="x" type="button" aria-label="Remove this source">×</button></td>';
+      tr.innerHTML='<td><input class="tx" aria-label="Income source" maxlength="40"></td><td><input class="amt-in" type="number" inputmode="decimal" min="0" step="any" placeholder="0.00" aria-label="First amount"></td><td class="c2"><input class="amt-in" type="number" inputmode="decimal" min="0" step="any" placeholder="0.00" aria-label="Second amount"></td><td><button class="x" type="button" aria-label="Remove this source">×</button></td>';
       var n=tr.querySelectorAll('input');
       n[0].value=r.l;n[1].value=r.a||'';n[2].value=r.b||'';
       n[0].oninput=function(){r.l=n[0].value};
@@ -187,7 +190,13 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   }
   function update(){
     var s1=0,s2=0;S.inc.forEach(function(r){s1+=r.a;s2+=r.b});
-    var pooled=s1+s2,pot=pooled*Math.min(S.pp,100)/100,each=pot/2,jt=pooled-pot;
+    var single=S.mode==='single';if(single)s2=0;
+    var pooled=s1+s2,pot=single?0:pooled*Math.min(S.pp,100)/100,each=pot/2,jt=pooled-pot;
+    document.body.classList.toggle('single',single);
+    $('jh').textContent=single?'Your jars':'Joint jars';
+    $('jsub').textContent=single?'All of your income is divided across these jars.':'Everything left after the personal pot goes into your shared account, split across these jars.';
+    $('jl').textContent=single?'Total to split':'Joint total';
+    $('pl').textContent=single?'Total income':'Total combined (pooled)';
     $('s1').textContent=money(s1);$('s2').textContent=money(s2);$('pooled').textContent=money(pooled);
     $('pot').textContent=money(pot);$('each').textContent=money(each);$('jointAmt').textContent=money(jt);
     document.querySelectorAll('.nm1').forEach(function(e){e.textContent=S.names[0]||'Partner 1'});
@@ -198,12 +207,13 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
   }
   function build(){
     buildInc();buildPer();buildJoint();
-    $('n1').value=S.names[0];$('n2').value=S.names[1];$('pp').value=S.pp;update();
+    $('n1').value=S.names[0];$('n2').value=S.names[1];$('pp').value=S.pp;$('mode').value=S.mode;update();
   }
   $('n1').oninput=function(){S.names[0]=this.value;update()};
   $('n2').oninput=function(){S.names[1]=this.value;update()};
   $('pp').oninput=function(){S.pp=num(this.value);update()};
   $('cur').onchange=update;
+  $('mode').onchange=function(){S.mode=this.value;update()};
   $('addInc').onclick=function(){S.inc.push({l:'Other income',a:0,b:0});buildInc()};
   $('perScale').onclick=function(){scale(S.per,buildPer)};
   $('perReset').onclick=function(){S.pp=DPP;$('pp').value=DPP;S.per.forEach(function(j,i){j.p=DP[i]});buildPer();update()};
