@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Couples Money Jar Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#f3f7f6;--card:#fff;--ink:#12302e;--muted:#5b7270;--line:#d5e2df;--accent:#0f6b63;--warn:#b4411f;--glass:#e6f1ef;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1b1a;--card:#142725;--ink:#e5f2f0;--muted:#93aeab;--line:#244240;--accent:#4fc3b5;--warn:#ff8f6b;--glass:#1b3331}}
+:root[data-theme="dark"]{--bg:#0d1b1a;--card:#142725;--ink:#e5f2f0;--muted:#93aeab;--line:#244240;--accent:#4fc3b5;--warn:#ff8f6b;--glass:#1b3331}
+*,*:before,*:after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Figtree,system-ui,sans-serif;line-height:1.5}
+main{max-width:980px;margin:0 auto;padding:28px 18px 48px}
+h1{font-family:'Bricolage Grotesque',Georgia,sans-serif;font-size:clamp(1.8rem,5vw,2.6rem);margin:0 0 6px;letter-spacing:-.02em;line-height:1.1}
+h2{font-family:'Bricolage Grotesque',Georgia,sans-serif;font-size:1.3rem;margin:0 0 4px}
+.lede{color:var(--muted);margin:0 0 20px;max-width:60ch}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:18px}
+.sub{color:var(--muted);font-size:.9rem;margin:0 0 12px}
+.scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:520px}
+th,td{padding:6px 8px;text-align:left;vertical-align:middle}
+th{font-weight:600;font-size:.9rem}
+tbody tr,tfoot tr{border-top:1px solid var(--line)}
+td.r,th.r{text-align:right}
+input{font:inherit;color:var(--ink)}
+.tx,.nin,.name{background:transparent;border:0;border-bottom:1px dashed var(--line);padding:3px 0;width:100%;outline:none}
+.nin{font-weight:600}
+.tx:focus,.nin:focus,.name:focus{border-bottom-color:var(--accent)}
+.amt-in{width:100%;min-width:100px;background:var(--bg);border:2px solid var(--line);border-radius:8px;padding:6px 8px;outline:none;text-align:right}
+.amt-in:focus{border-color:var(--accent)}
+.x{background:transparent;border:0;color:var(--muted);font-size:1.3rem;cursor:pointer;padding:0 6px}
+.pct{display:inline-flex;align-items:center;border:2px solid var(--line);border-radius:8px;padding:0 8px;background:var(--bg)}
+.pct:focus-within{border-color:var(--accent)}
+.pct input{width:62px;border:0;background:transparent;padding:6px 0;outline:none;text-align:right;font-weight:600}
+.pct span{color:var(--muted);margin-left:2px}
+.money{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.big{font:700 1.7rem 'Bricolage Grotesque',sans-serif;color:var(--accent)}
+.nmwrap{display:flex;align-items:center;gap:8px}
+.sw{width:12px;height:12px;border-radius:50%;flex:none;background:var(--c)}
+select{font:inherit;color:var(--ink);background:var(--bg);border:2px solid var(--line);border-radius:10px;padding:8px 10px}
+.top{display:flex;gap:12px;align-items:center;margin-bottom:18px;flex-wrap:wrap}
+.top label{font-weight:600}
+.pooled{display:flex;flex-wrap:wrap;gap:6px 28px;align-items:baseline;justify-content:space-between}
+.pooled small{display:block;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;margin-top:10px}
+.jar{border:1px solid var(--line);border-radius:12px;padding:14px;display:grid;grid-template-columns:70px 1fr;gap:14px;align-items:center}
+.glass{width:62px;height:82px;position:relative}
+.glass .lid{position:absolute;top:0;left:11px;right:11px;height:11px;border-radius:4px;background:var(--c)}
+.glass .body{position:absolute;top:13px;left:0;right:0;bottom:0;border:3px solid var(--c);border-radius:8px 8px 16px 16px;background:var(--glass);overflow:hidden}
+.glass .fill{position:absolute;left:0;right:0;bottom:0;height:0;background:var(--c);opacity:.85;transition:height .35s ease}
+.row{display:flex;align-items:center;gap:8px;margin-top:8px}
+.amt{margin-left:auto;font:700 1.25rem 'Bricolage Grotesque',sans-serif;color:var(--accent)}
+.foot{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;margin-top:14px}
+.ok{color:var(--accent)}.bad{color:var(--warn)}
+button.b{font:600 .9rem Figtree,sans-serif;border-radius:9px;padding:8px 14px;border:2px solid var(--accent);cursor:pointer;background:transparent;color:var(--accent)}
+button.fill-b{background:var(--accent);color:#fff}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.note{color:var(--muted);font-size:.85rem}
+.btns{display:flex;gap:10px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:16px;background:#f4f7f2;border-radius:14px;padding:14px 20px;margin-bottom:22px}
+.bn{font:700 clamp(1.3rem,4vw,1.9rem)/1.1 'Bricolage Grotesque',Georgia,sans-serif;letter-spacing:-.02em;color:#14452f}
+.bt{font-weight:500;font-size:.95rem;color:#3f5f4f;margin-top:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main>
+  <div class="brand"><svg aria-hidden="true" viewBox="0 0 120 124" width="64" height="66"><path d="M18 100 C40 86 80 86 102 100" fill="none" stroke="#14452f" stroke-width="5" stroke-linecap="round"/><path d="M60 92 L60 46" fill="none" stroke="#14452f" stroke-width="6" stroke-linecap="round"/><path d="M60 70 C42 70 30 58 28 42 C46 42 58 52 60 70Z" fill="#5fae4a"/><path d="M60 54 C58 30 76 14 98 12 C100 36 84 54 60 54Z" fill="#14452f"/><ellipse cx="60" cy="112" rx="6" ry="8" fill="#e0a82e"/></svg><div><div class="bn">Build More Than Yourself</div><div class="bt">Planting seeds for investment</div></div></div>
+  <h1>Money jar calculator for couples</h1>
+  <p class="lede">Enter what each of you earns. A slice goes to your personal jars, and the rest goes to your joint jars. Rename any jar or change any percentage to suit you.</p>
+
+  <div class="top">
+    <label for="cur">Currency</label>
+    <select id="cur"><option value="£">£ GBP</option><option value="$">$ USD</option><option value="€">€ EUR</option><option value="A$">A$ AUD</option><option value="C$">C$ CAD</option><option value="NZ$">NZ$ NZD</option></select>
+    <button class="b" id="reset" type="button">Reset everything</button>
+  </div>
+
+  <section class="card" aria-label="Income">
+    <h2>Income</h2>
+    <p class="sub">Type your names, then enter each income source for each of you. Leave a box empty if it doesn't apply.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th>Income source</th><th><input class="nin" id="n1" aria-label="First name" maxlength="30"></th><th><input class="nin" id="n2" aria-label="Second name" maxlength="30"></th><th></th></tr></thead>
+      <tbody id="incRows"></tbody>
+      <tfoot><tr><td><b>Sub total</b></td><td class="r" id="s1"></td><td class="r" id="s2"></td><td></td></tr></tfoot>
+    </table>
+    </div>
+    <div class="foot"><button class="b" id="addInc" type="button">Add income source</button>
+      <div class="pooled"><span>Total combined (pooled)</span> <span class="big" id="pooled"></span></div></div>
+  </section>
+
+  <section class="card" aria-label="Personal jars">
+    <h2>Personal jars</h2>
+    <p class="sub">A share of your combined income, split 50/50 between you, goes into personal jars.</p>
+    <div class="money">
+      <label class="pct"><input id="pp" type="number" inputmode="decimal" min="0" max="100" step="any" aria-label="Personal pot percentage"><span>%</span></label>
+      <span>of total combined = <b id="pot"></b>, which is <b id="each"></b> each</span>
+    </div>
+    <div class="scroll" style="margin-top:10px">
+    <table>
+      <thead><tr><th>Jar</th><th>Share of personal pot</th><th class="r nm1"></th><th class="r nm2"></th></tr></thead>
+      <tbody id="perRows"></tbody>
+    </table>
+    </div>
+    <div class="foot"><span id="perSt"></span><div class="btns"><button class="b" id="perScale" type="button">Scale to 100%</button><button class="b" id="perReset" type="button">Reset to defaults</button></div></div>
+  </section>
+
+  <section class="card" aria-label="Joint jars">
+    <h2>Joint jars</h2>
+    <p class="sub">Everything left after the personal pot goes into your shared account, split across these jars.</p>
+    <div class="money"><span>Joint total</span><span class="big" id="jointAmt"></span></div>
+    <div class="grid" id="jointGrid"></div>
+    <div class="foot"><span id="jointSt"></span><div class="btns"><button class="b" id="jointScale" type="button">Scale to 100%</button><button class="b" id="jointReset" type="button">Reset to defaults</button></div></div>
+  </section>
+  <p class="note">This calculator is a planning guide, not financial advice. Nothing you enter leaves your browser.</p>
+</main>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var S,PC=[],JC=[];
+  var DPP=16.67,DP=[25,25,25,25],DJ=[10,10,5,10,10,55];
+  var PCT='<label class="pct"><input type="number" inputmode="decimal" min="0" max="100" step="any" aria-label="Percentage"><span>%</span></label>';
+  function fresh(){
+    S={names:['Partner 1','Partner 2'],pp:16.67,
+      inc:[{l:'Salary',a:0,b:0},{l:'Rent / other earnings',a:0,b:0}],
+      per:[{n:'Play',p:25,c:'#d65a8a'},{n:'Financial freedom',p:25,c:'#3b6fd4'},{n:'Education',p:25,c:'#d49a1f'},{n:'Long-term savings for spending',p:25,c:'#8a5cd1'}],
+      joint:[{n:'Play – self reward',p:10,c:'#d65a8a'},{n:'Financial freedom account',p:10,c:'#3b6fd4'},{n:'Give – charity',p:5,c:'#2f9e5f'},{n:'Education',p:10,c:'#d49a1f'},{n:'Long-term savings for spending',p:10,c:'#8a5cd1'},{n:'Necessities and bills',p:55,c:'#0f6b63'}]};
+  }
+  function money(v){return $('cur').value+(isFinite(v)?v:0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
+  function num(v){v=parseFloat(v);return isFinite(v)&&v>0?v:0}
+  function r2(v){return Math.round(v*100)/100}
+
+  function buildInc(){
+    var b=$('incRows');b.innerHTML='';
+    S.inc.forEach(function(r,i){
+      var tr=document.createElement('tr');
+      tr.innerHTML='<td><input class="tx" aria-label="Income source" maxlength="40"></td><td><input class="amt-in" type="number" inputmode="decimal" min="0" step="any" placeholder="0.00" aria-label="First amount"></td><td><input class="amt-in" type="number" inputmode="decimal" min="0" step="any" placeholder="0.00" aria-label="Second amount"></td><td><button class="x" type="button" aria-label="Remove this source">×</button></td>';
+      var n=tr.querySelectorAll('input');
+      n[0].value=r.l;n[1].value=r.a||'';n[2].value=r.b||'';
+      n[0].oninput=function(){r.l=n[0].value};
+      n[1].oninput=function(){r.a=num(n[1].value);update()};
+      n[2].oninput=function(){r.b=num(n[2].value);update()};
+      tr.querySelector('.x').onclick=function(){if(S.inc.length>1){S.inc.splice(i,1);buildInc();update()}};
+      b.appendChild(tr);
+    });
+  }
+  function buildPer(){
+    var b=$('perRows');b.innerHTML='';PC=[];
+    S.per.forEach(function(j){
+      var tr=document.createElement('tr');tr.style.setProperty('--c',j.c);
+      tr.innerHTML='<td><div class="nmwrap"><i class="sw"></i><input class="name" aria-label="Jar name" maxlength="40"></div></td><td>'+PCT+'</td><td class="r a1"></td><td class="r a2"></td>';
+      var nm=tr.querySelector('.name'),p=tr.querySelector('.pct input');
+      nm.value=j.n;p.value=j.p;
+      nm.oninput=function(){j.n=nm.value};
+      p.oninput=function(){j.p=num(p.value);update()};
+      b.appendChild(tr);PC.push({a1:tr.querySelector('.a1'),a2:tr.querySelector('.a2')});
+    });
+  }
+  function buildJoint(){
+    var g=$('jointGrid');g.innerHTML='';JC=[];
+    S.joint.forEach(function(j){
+      var d=document.createElement('div');d.className='jar';d.style.setProperty('--c',j.c);
+      d.innerHTML='<div class="glass" aria-hidden="true"><div class="lid"></div><div class="body"><div class="fill"></div></div></div><div><input class="name" aria-label="Jar name" maxlength="40"><div class="row">'+PCT+'<div class="amt"></div></div></div>';
+      var nm=d.querySelector('.name'),p=d.querySelector('.pct input');
+      nm.value=j.n;p.value=j.p;
+      nm.oninput=function(){j.n=nm.value};
+      p.oninput=function(){j.p=num(p.value);update()};
+      g.appendChild(d);JC.push({amt:d.querySelector('.amt'),fill:d.querySelector('.fill')});
+    });
+  }
+  function stat(el,list){
+    var t=r2(list.reduce(function(a,j){return a+j.p},0)),ok=Math.abs(t-100)<.005;
+    el.className=ok?'ok':'bad';
+    el.textContent='Total '+t+'%'+(ok?' – every part is allocated':t<100?' – '+r2(100-t)+'% unassigned':' – '+r2(t-100)+'% over');
+  }
+  function scale(list,rebuild){
+    var t=list.reduce(function(a,j){return a+j.p},0);if(t<=0)return;
+    list.forEach(function(j){j.p=r2(j.p/t*100)});
+    list[0].p=r2(list[0].p+100-list.reduce(function(a,j){return a+j.p},0));
+    rebuild();update();
+  }
+  function update(){
+    var s1=0,s2=0;S.inc.forEach(function(r){s1+=r.a;s2+=r.b});
+    var pooled=s1+s2,pot=pooled*Math.min(S.pp,100)/100,each=pot/2,jt=pooled-pot;
+    $('s1').textContent=money(s1);$('s2').textContent=money(s2);$('pooled').textContent=money(pooled);
+    $('pot').textContent=money(pot);$('each').textContent=money(each);$('jointAmt').textContent=money(jt);
+    document.querySelectorAll('.nm1').forEach(function(e){e.textContent=S.names[0]||'Partner 1'});
+    document.querySelectorAll('.nm2').forEach(function(e){e.textContent=S.names[1]||'Partner 2'});
+    PC.forEach(function(c,i){var v=money(each*S.per[i].p/100);c.a1.textContent=v;c.a2.textContent=v});
+    JC.forEach(function(c,i){var j=S.joint[i];c.amt.textContent=money(jt*j.p/100);c.fill.style.height=Math.min(j.p,100)+'%'});
+    stat($('perSt'),S.per);stat($('jointSt'),S.joint);
+  }
+  function build(){
+    buildInc();buildPer();buildJoint();
+    $('n1').value=S.names[0];$('n2').value=S.names[1];$('pp').value=S.pp;update();
+  }
+  $('n1').oninput=function(){S.names[0]=this.value;update()};
+  $('n2').oninput=function(){S.names[1]=this.value;update()};
+  $('pp').oninput=function(){S.pp=num(this.value);update()};
+  $('cur').onchange=update;
+  $('addInc').onclick=function(){S.inc.push({l:'Other income',a:0,b:0});buildInc()};
+  $('perScale').onclick=function(){scale(S.per,buildPer)};
+  $('perReset').onclick=function(){S.pp=DPP;$('pp').value=DPP;S.per.forEach(function(j,i){j.p=DP[i]});buildPer();update()};
+  $('jointReset').onclick=function(){S.joint.forEach(function(j,i){j.p=DJ[i]});buildJoint();update()};
+  $('jointScale').onclick=function(){scale(S.joint,buildJoint)};
+  $('reset').onclick=function(){fresh();build()};
+  fresh();build();
+})();
+</script>
+</body>
+</html>
