@@ -66,6 +66,36 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid 
 .bn{font:700 clamp(1.3rem,4vw,1.9rem)/1.1 'Bricolage Grotesque',Georgia,sans-serif;letter-spacing:-.02em;color:#14452f}
 .bt{font-weight:500;font-size:.95rem;color:#3f5f4f;margin-top:2px}
 body.single .c2,body.single #perCard{display:none}
+html{-webkit-text-size-adjust:100%}
+.seg{display:inline-flex}
+.seg .b{border-radius:0}
+.seg .b:first-child{border-radius:9px 0 0 9px}
+.seg .b:last-child{border-radius:0 9px 9px 0;margin-left:-2px}
+.seg .b[aria-pressed="true"]{background:var(--accent);color:var(--bg)}
+@media (max-width:640px){
+main{padding:20px 14px 40px}
+.card{padding:16px 14px}
+table{min-width:0}
+th,td{padding:6px 4px}
+.amt-in{min-width:0;padding:8px 6px}
+.x{padding:10px 12px;font-size:1.4rem}
+.top{gap:10px}
+.top select,.top button{flex:1 1 auto}
+button.b{padding:12px 16px}
+.foot{flex-direction:column;align-items:stretch}
+.foot .btns{display:grid;grid-template-columns:1fr 1fr}
+.seg{flex:1 1 100%}
+.seg .b{flex:1}
+.pooled{flex-direction:column;gap:2px}
+.brand{padding:12px 14px;gap:12px}
+.brand svg{width:48px;height:50px}
+#perCard thead{display:none}
+#perRows tr{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;padding:12px 0}
+#perRows td{padding:0;text-align:left}
+#perRows td:nth-child(-n+2){grid-column:1/-1}
+#perRows td.r{text-align:left;font-weight:600}
+#perRows td.r::before{content:attr(data-l);display:block;font-size:.8rem;font-weight:400;color:var(--muted)}
+}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -78,8 +108,8 @@ body.single .c2,body.single #perCard{display:none}
   <div class="top">
     <label for="cur">Currency</label>
     <select id="cur"><option value="£">£ GBP</option><option value="$">$ USD</option><option value="€">€ EUR</option><option value="A$">A$ AUD</option><option value="C$">C$ CAD</option><option value="NZ$">NZ$ NZD</option></select>
-    <label for="mode">Plan for</label>
-    <select id="mode"><option value="couple">A couple</option><option value="single">One person</option></select>
+    <span style="font-weight:600">Plan for</span>
+    <div class="seg" role="group" aria-label="Plan for"><button type="button" id="mCouple" class="b" aria-pressed="true">A couple</button><button type="button" id="mSingle" class="b" aria-pressed="false">One person</button></div>
     <button class="b" id="reset" type="button">Reset everything</button>
   </div>
 
@@ -130,7 +160,7 @@ body.single .c2,body.single #perCard{display:none}
   var DPP=16.67,DP=[25,25,25,25],DJ=[10,10,5,10,10,55];
   var PCT='<label class="pct"><input type="number" inputmode="decimal" min="0" max="100" step="any" aria-label="Percentage"><span>%</span></label>';
   function fresh(){
-    S={mode:(S&&S.mode)||'couple',names:['Partner 1','Partner 2'],pp:16.67,
+    S={mode:(S&&S.mode)||'couple',names:['Me','Partner'],pp:16.67,
       inc:[{l:'Salary',a:0,b:0},{l:'Rent / other earnings',a:0,b:0}],
       per:[{n:'Play',p:25,c:'#d65a8a'},{n:'Financial freedom',p:25,c:'#3b6fd4'},{n:'Education',p:25,c:'#d49a1f'},{n:'Long-term savings for spending',p:25,c:'#8a5cd1'}],
       joint:[{n:'Play – self reward',p:10,c:'#d65a8a'},{n:'Financial freedom account',p:10,c:'#3b6fd4'},{n:'Give – charity',p:5,c:'#2f9e5f'},{n:'Education',p:10,c:'#d49a1f'},{n:'Long-term savings for spending',p:10,c:'#8a5cd1'},{n:'Necessities and bills',p:55,c:'#0f6b63'}]};
@@ -193,27 +223,29 @@ body.single .c2,body.single #perCard{display:none}
     var single=S.mode==='single';if(single)s2=0;
     var pooled=s1+s2,pot=single?0:pooled*Math.min(S.pp,100)/100,each=pot/2,jt=pooled-pot;
     document.body.classList.toggle('single',single);
+    $('mSingle').setAttribute('aria-pressed',single);$('mCouple').setAttribute('aria-pressed',!single);
     $('jh').textContent=single?'Your jars':'Joint jars';
     $('jsub').textContent=single?'All of your income is divided across these jars.':'Everything left after the personal pot goes into your shared account, split across these jars.';
     $('jl').textContent=single?'Total to split':'Joint total';
     $('pl').textContent=single?'Total income':'Total combined (pooled)';
     $('s1').textContent=money(s1);$('s2').textContent=money(s2);$('pooled').textContent=money(pooled);
     $('pot').textContent=money(pot);$('each').textContent=money(each);$('jointAmt').textContent=money(jt);
-    document.querySelectorAll('.nm1').forEach(function(e){e.textContent=S.names[0]||'Partner 1'});
-    document.querySelectorAll('.nm2').forEach(function(e){e.textContent=S.names[1]||'Partner 2'});
-    PC.forEach(function(c,i){var v=money(each*S.per[i].p/100);c.a1.textContent=v;c.a2.textContent=v});
+    document.querySelectorAll('.nm1').forEach(function(e){e.textContent=S.names[0]||'Me'});
+    document.querySelectorAll('.nm2').forEach(function(e){e.textContent=S.names[1]||'Partner'});
+    PC.forEach(function(c,i){var v=money(each*S.per[i].p/100);c.a1.textContent=v;c.a2.textContent=v;c.a1.setAttribute('data-l',S.names[0]||'Me');c.a2.setAttribute('data-l',S.names[1]||'Partner')});
     JC.forEach(function(c,i){var j=S.joint[i];c.amt.textContent=money(jt*j.p/100);c.fill.style.height=Math.min(j.p,100)+'%'});
     stat($('perSt'),S.per);stat($('jointSt'),S.joint);
   }
   function build(){
     buildInc();buildPer();buildJoint();
-    $('n1').value=S.names[0];$('n2').value=S.names[1];$('pp').value=S.pp;$('mode').value=S.mode;update();
+    $('n1').value=S.names[0];$('n2').value=S.names[1];$('pp').value=S.pp;update();
   }
   $('n1').oninput=function(){S.names[0]=this.value;update()};
   $('n2').oninput=function(){S.names[1]=this.value;update()};
   $('pp').oninput=function(){S.pp=num(this.value);update()};
   $('cur').onchange=update;
-  $('mode').onchange=function(){S.mode=this.value;update()};
+  $('mCouple').onclick=function(){S.mode='couple';update()};
+  $('mSingle').onclick=function(){S.mode='single';update()};
   $('addInc').onclick=function(){S.inc.push({l:'Other income',a:0,b:0});buildInc()};
   $('perScale').onclick=function(){scale(S.per,buildPer)};
   $('perReset').onclick=function(){S.pp=DPP;$('pp').value=DPP;S.per.forEach(function(j,i){j.p=DP[i]});buildPer();update()};
